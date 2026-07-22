@@ -19,16 +19,13 @@
       font-size: 36px;
       margin-bottom: 20px;
     }
-    input { 
+    input#todoInput { 
       padding: 12px; 
       width: 100%;
       border: 2px solid #607d8b;
       border-radius: 4px;
       font-size: 18px;
       margin-bottom: 10px;
-    }
-    input#todoInput {
-      /* the add-todo box */
     }
     .add-btn { 
       padding: 12px;
@@ -39,10 +36,24 @@
       cursor: pointer;
       font-size: 18px;
       width: 100%;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
     }
     .add-btn:hover {
       background-color: #546e7a;
+    }
+    .filter-btn {
+      padding: 10px;
+      background-color: #90a4ae;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      width: 100%;
+      margin-bottom: 15px;
+    }
+    .filter-btn:hover {
+      background-color: #78909c;
     }
     ul { 
       list-style: none; 
@@ -177,10 +188,14 @@
   <h1>📋 Our ToDo List</h1>
   <input type="text" id="todoInput" placeholder="Add a todo...">
   <button class="add-btn" onclick="addTodo()">Add</button>
+  <button class="filter-btn" id="filterBtn" onclick="toggleFilter()">Hide completed</button>
   <ul id="todoList"></ul>
 
   <script>
     const API = 'https://todo-app-rxai.onrender.com';
+
+    // When true, completed items are hidden from the list.
+    let hideCompleted = false;
 
     // Convert characters that have special meaning in HTML into safe text,
     // so a todo title can never inject markup or scripts into the page.
@@ -197,9 +212,22 @@
       return { cls: 'assignee-unassigned', label: '–' };
     }
 
+    function toggleFilter() {
+      hideCompleted = !hideCompleted;
+      document.getElementById('filterBtn').textContent =
+        hideCompleted ? 'Show completed' : 'Hide completed';
+      loadTodos();
+    }
+
     async function loadTodos() {
       const res = await fetch(`${API}/todos`);
-      const todos = await res.json();
+      let todos = await res.json();
+
+      // Apply the show/hide-completed filter before drawing.
+      if (hideCompleted) {
+        todos = todos.filter(t => !t.completed);
+      }
+
       const list = document.getElementById('todoList');
       list.innerHTML = todos.map(t => {
         const date = new Date(t.created_at);
@@ -227,7 +255,7 @@
                   <button onclick="moveTodo(${t.id}, 'up')">↑</button>
                   <button onclick="moveTodo(${t.id}, 'down')">↓</button>
                 </div>
-                <button class="delete-btn" onclick="deleteTodo(${t.id})">×</button>
+                <button class="delete-btn" onclick="deleteTodo(${t.id}, '${escapeHtml(t.title).replace(/'/g, "\\'")}')">×</button>
               </div>
             </div>
           </li>
@@ -272,7 +300,11 @@
       loadTodos();
     }
 
-    async function deleteTodo(id) {
+    async function deleteTodo(id, title) {
+      // Ask before permanently deleting, since there's no undo.
+      const ok = confirm(`Delete "${title}"? This can't be undone.`);
+      if (!ok) return;
+
       await fetch(`${API}/todos/${id}`, { method: 'DELETE' });
       loadTodos();
     }
