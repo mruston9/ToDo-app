@@ -197,7 +197,7 @@
 <body>
   <div class="header-row">
     <h1>📋 Our ToDo List</h1>
-    <button class="filter-btn" id="filterBtn" onclick="toggleFilter()">Hide completed</button>
+    <button class="filter-btn" id="filterBtn" title="Hide completed" onclick="toggleFilter()">Hide</button>
   </div>
   <div class="add-row">
     <input type="text" id="todoInput" placeholder="Add a todo...">
@@ -228,8 +228,9 @@
 
     function toggleFilter() {
       hideCompleted = !hideCompleted;
-      document.getElementById('filterBtn').textContent =
-        hideCompleted ? 'Show completed' : 'Hide completed';
+      const filterBtn = document.getElementById('filterBtn');
+      filterBtn.textContent = hideCompleted ? 'Show' : 'Hide';
+      filterBtn.title = hideCompleted ? 'Show completed' : 'Hide completed';
       loadTodos();
     }
 
