@@ -305,10 +305,18 @@ This step tells your backend server how to connect to the PostgreSQL database on
 2. Click **Environment**
 3. Add environment variable:
    - **Key:** `DATABASE_URL`
-   - **Value:** (paste the connection string you just copied)
+   - **Value:** (paste the connection string you just copied from your database)
 4. Click **Save Changes**
 
-Render will automatically redeploy with the new environment variable.
+### Important: Verify the Deployment
+
+After saving, Render will start a redeploy. **Do not test your app until the deployment is complete.**
+
+1. Click the **"Deploys"** tab on your web service
+2. Wait for the deployment to finish (you'll see **"Live"** status when done)
+3. This usually takes 1-2 minutes
+
+If you test the app before the environment variable is deployed, you'll get 500 errors because your backend can't connect to the database. Make sure the deployment is **"Live"** before testing.
 
 ---
 
@@ -317,10 +325,29 @@ Render will automatically redeploy with the new environment variable.
 ### What this step does:
 This step creates the todos table in your Render PostgreSQL database. It's the same table structure you created locally, but now it's in the cloud where your live app can access it.
 
+### Part 1: Get the External Database URL
+
 1. Go back to your PostgreSQL instance in Render
 2. Click **Connect**
-3. Click **PSQL**
-4. Paste this:
+3. In the popup that appears, look for the **"External Database URL"** section
+4. Copy the entire connection string (it starts with `postgresql://`)
+
+### Part 2: Connect to your database from Terminal
+
+1. Open Terminal on your Mac
+2. Paste this command (replace the URL with your copied connection string):
+   ```bash
+   psql "postgresql://your_copied_url_here"
+   ```
+   Example:
+   ```bash
+   psql "postgresql://user:password@host.render.com:5432/dbname"
+   ```
+3. You should now be connected to your cloud database (you'll see a prompt like `dbname=>`)
+
+### Part 3: Create the table
+
+1. In the psql terminal, paste this SQL command:
    ```sql
    CREATE TABLE todos (
      id SERIAL PRIMARY KEY,
@@ -329,8 +356,8 @@ This step creates the todos table in your Render PostgreSQL database. It's the s
      created_at TIMESTAMP DEFAULT NOW()
    );
    ```
-5. Press Enter—table is created!
-6. Type `\q` to exit
+2. Press Enter—the table is created!
+3. Type `\q` to exit psql
 
 ---
 
