@@ -52,11 +52,16 @@
       background-color: #fffaf0;
       border-radius: 4px;
     }
+    .todo-container {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
     .todo-item {
       display: flex;
       gap: 10px;
       align-items: flex-start;
-      margin-bottom: 8px;
+      flex: 1;
     }
     .todo-item input[type="checkbox"] {
       width: 24px;
@@ -81,17 +86,22 @@
       color: #999;
       margin-top: 4px;
     }
-    .todo-actions {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 8px;
-    }
-    li button {
+    .delete-btn {
       background-color: #ff4500;
-      padding: 8px 16px;
-      font-size: 16px;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      width: 36px;
+      height: 36px;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
     }
-    li button:hover {
+    .delete-btn:hover {
       background-color: #ff3300;
     }
   </style>
@@ -114,16 +124,16 @@
         const formattedTime = date.toLocaleString();
         return `
           <li>
-            <div class="todo-item">
-              <input type="checkbox" ${t.completed ? 'checked' : ''} 
-                onchange="toggleTodo(${t.id}, this.checked)">
-              <div class="todo-details">
-                <div class="todo-title ${t.completed ? 'completed' : ''}">${t.title}</div>
-                <div class="todo-time">${formattedTime}</div>
+            <div class="todo-container">
+              <div class="todo-item">
+                <input type="checkbox" ${t.completed ? 'checked' : ''} 
+                  onchange="toggleTodo(${t.id}, this.checked)">
+                <div class="todo-details">
+                  <div class="todo-title ${t.completed ? 'completed' : ''}">${t.title}</div>
+                  <div class="todo-time">${formattedTime}</div>
+                </div>
               </div>
-            </div>
-            <div class="todo-actions">
-              <button onclick="deleteTodo(${t.id})">Delete</button>
+              <button class="delete-btn" onclick="deleteTodo(${t.id})">×</button>
             </div>
           </li>
         `;
