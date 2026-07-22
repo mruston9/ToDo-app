@@ -27,7 +27,10 @@
       font-size: 18px;
       margin-bottom: 10px;
     }
-    button { 
+    input#todoInput {
+      /* the add-todo box */
+    }
+    .add-btn { 
       padding: 12px;
       background-color: #607d8b;
       color: white;
@@ -38,7 +41,7 @@
       width: 100%;
       margin-bottom: 15px;
     }
-    button:hover {
+    .add-btn:hover {
       background-color: #546e7a;
     }
     ul { 
@@ -54,8 +57,30 @@
     }
     .todo-container {
       display: flex;
-      gap: 10px;
+      gap: 8px;
       align-items: flex-start;
+    }
+    .assignee-btn {
+      width: 34px;
+      height: 40px;
+      border: none;
+      border-radius: 4px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      flex-shrink: 0;
+      color: white;
+      padding: 0;
+      margin: 0;
+    }
+    .assignee-unassigned {
+      background-color: #b0bec5;
+    }
+    .assignee-M {
+      background-color: #1e88e5;
+    }
+    .assignee-D {
+      background-color: #fb8c00;
     }
     .todo-item {
       display: flex;
@@ -87,12 +112,48 @@
       color: #90a4ae;
       margin-top: 4px;
     }
+    .todo-completed-time {
+      font-size: 14px;
+      color: #4caf50;
+      margin-top: 2px;
+    }
     .todo-controls {
       display: flex;
       gap: 6px;
       flex-shrink: 0;
+      align-items: stretch;
     }
-    .control-btn {
+    .reorder {
+      display: flex;
+      flex-direction: column;
+      width: 34px;
+      flex-shrink: 0;
+    }
+    .reorder button {
+      background-color: #78909c;
+      color: white;
+      border: none;
+      cursor: pointer;
+      height: 20px;
+      font-size: 14px;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .reorder button:first-child {
+      border-radius: 4px 4px 0 0;
+    }
+    .reorder button:last-child {
+      border-radius: 0 0 4px 4px;
+      border-top: 1px solid #607d8b;
+    }
+    .reorder button:hover {
+      background-color: #607d8b;
+    }
+    .delete-btn {
+      background-color: #455a64;
       color: white;
       border: none;
       border-radius: 4px;
@@ -105,15 +166,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-    }
-    .move-btn {
-      background-color: #78909c;
-    }
-    .move-btn:hover {
-      background-color: #607d8b;
-    }
-    .delete-btn {
-      background-color: #455a64;
+      flex-shrink: 0;
     }
     .delete-btn:hover {
       background-color: #37474f;
@@ -123,7 +176,7 @@
 <body>
   <h1>📋 Our ToDo List</h1>
   <input type="text" id="todoInput" placeholder="Add a todo...">
-  <button onclick="addTodo()">Add</button>
+  <button class="add-btn" onclick="addTodo()">Add</button>
   <ul id="todoList"></ul>
 
   <script>
@@ -137,6 +190,13 @@
       return div.innerHTML;
     }
 
+    // Return the CSS class and label for an assignee value.
+    function assigneeDisplay(a) {
+      if (a === 'M') return { cls: 'assignee-M', label: 'M' };
+      if (a === 'D') return { cls: 'assignee-D', label: 'D' };
+      return { cls: 'assignee-unassigned', label: '–' };
+    }
+
     async function loadTodos() {
       const res = await fetch(`${API}/todos`);
       const todos = await res.json();
@@ -145,21 +205,29 @@
         const date = new Date(t.created_at);
         const formattedTime = date.toLocaleString();
         const safeTitle = escapeHtml(t.title);
+        const completedLine = t.completed_at
+          ? `<div class="todo-completed-time">Completed: ${new Date(t.completed_at).toLocaleString()}</div>`
+          : '';
+        const assignee = assigneeDisplay(t.assignee);
         return `
           <li>
             <div class="todo-container">
+              <button class="assignee-btn ${assignee.cls}" onclick="cycleAssignee(${t.id})">${assignee.label}</button>
               <div class="todo-item">
                 <input type="checkbox" ${t.completed ? 'checked' : ''} 
                   onchange="toggleTodo(${t.id}, this.checked)">
                 <div class="todo-details">
                   <div class="todo-title ${t.completed ? 'completed' : ''}">${safeTitle}</div>
                   <div class="todo-time">${formattedTime}</div>
+                  ${completedLine}
                 </div>
               </div>
               <div class="todo-controls">
-                <button class="control-btn move-btn" onclick="moveTodo(${t.id}, 'up')">↑</button>
-                <button class="control-btn move-btn" onclick="moveTodo(${t.id}, 'down')">↓</button>
-                <button class="control-btn delete-btn" onclick="deleteTodo(${t.id})">×</button>
+                <div class="reorder">
+                  <button onclick="moveTodo(${t.id}, 'up')">↑</button>
+                  <button onclick="moveTodo(${t.id}, 'down')">↓</button>
+                </div>
+                <button class="delete-btn" onclick="deleteTodo(${t.id})">×</button>
               </div>
             </div>
           </li>
@@ -178,6 +246,11 @@
         body: JSON.stringify({ title })
       });
       input.value = '';
+      loadTodos();
+    }
+
+    async function cycleAssignee(id) {
+      await fetch(`${API}/todos/${id}/assign`, { method: 'POST' });
       loadTodos();
     }
 

@@ -65,6 +65,26 @@ app.post('/todos/:id/move', async (req, res) => {
   }
 });
 
+// Cycle a todo's assignee: '' -> 'M' -> 'D' -> ''
+app.post('/todos/:id/assign', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const current = await pool.query('SELECT assignee FROM todos WHERE id = $1', [id]);
+    if (current.rows.length === 0) return res.status(404).json({ error: 'Not found' });
+
+    const now = current.rows[0].assignee || '';
+    const next = now === '' ? 'M' : now === 'M' ? 'D' : '';
+
+    const result = await pool.query(
+      'UPDATE todos SET assignee = $1 WHERE id = $2 RETURNING *',
+      [next, id]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Mark a todo complete/incomplete
 app.put('/todos/:id', async (req, res) => {
   const { id } = req.params;
