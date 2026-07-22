@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Dawn's ToDo App</title>
+  <title>Our ToDo List</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     * {
@@ -11,25 +11,25 @@
     }
     body { 
       font-family: Arial, sans-serif; 
-      background-color: #fff8f0;
+      background-color: #eceff1;
       padding: 15px;
     }
     h1 {
-      color: #ff8c00;
+      color: #546e7a;
       font-size: 36px;
       margin-bottom: 20px;
     }
     input { 
       padding: 12px; 
       width: 100%;
-      border: 2px solid #ff8c00;
+      border: 2px solid #607d8b;
       border-radius: 4px;
       font-size: 18px;
       margin-bottom: 10px;
     }
     button { 
       padding: 12px;
-      background-color: #ff8c00;
+      background-color: #607d8b;
       color: white;
       border: none;
       border-radius: 4px;
@@ -39,7 +39,7 @@
       margin-bottom: 15px;
     }
     button:hover {
-      background-color: #ff7700;
+      background-color: #546e7a;
     }
     ul { 
       list-style: none; 
@@ -47,9 +47,9 @@
     }
     li { 
       padding: 12px; 
-      border: 2px solid #ffa500; 
+      border: 2px solid #90a4ae; 
       margin: 10px 0;
-      background-color: #fffaf0;
+      background-color: #f5f7f8;
       border-radius: 4px;
     }
     .todo-container {
@@ -76,14 +76,15 @@
       font-size: 18px;
       word-wrap: break-word;
       overflow-wrap: break-word;
+      color: #37474f;
     }
     .todo-title.completed {
       text-decoration: line-through;
-      color: #999;
+      color: #b0bec5;
     }
     .todo-time {
       font-size: 14px;
-      color: #999;
+      color: #90a4ae;
       margin-top: 4px;
     }
     .todo-controls {
@@ -106,27 +107,35 @@
       justify-content: center;
     }
     .move-btn {
-      background-color: #ffa500;
+      background-color: #78909c;
     }
     .move-btn:hover {
-      background-color: #ff9500;
+      background-color: #607d8b;
     }
     .delete-btn {
-      background-color: #ff4500;
+      background-color: #455a64;
     }
     .delete-btn:hover {
-      background-color: #ff3300;
+      background-color: #37474f;
     }
   </style>
 </head>
 <body>
-  <h1>🍊 Dawn's ToDo App</h1>
+  <h1>📋 Our ToDo List</h1>
   <input type="text" id="todoInput" placeholder="Add a todo...">
   <button onclick="addTodo()">Add</button>
   <ul id="todoList"></ul>
 
   <script>
     const API = 'https://todo-app-rxai.onrender.com';
+
+    // Convert characters that have special meaning in HTML into safe text,
+    // so a todo title can never inject markup or scripts into the page.
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
 
     async function loadTodos() {
       const res = await fetch(`${API}/todos`);
@@ -135,6 +144,7 @@
       list.innerHTML = todos.map(t => {
         const date = new Date(t.created_at);
         const formattedTime = date.toLocaleString();
+        const safeTitle = escapeHtml(t.title);
         return `
           <li>
             <div class="todo-container">
@@ -142,7 +152,7 @@
                 <input type="checkbox" ${t.completed ? 'checked' : ''} 
                   onchange="toggleTodo(${t.id}, this.checked)">
                 <div class="todo-details">
-                  <div class="todo-title ${t.completed ? 'completed' : ''}">${t.title}</div>
+                  <div class="todo-title ${t.completed ? 'completed' : ''}">${safeTitle}</div>
                   <div class="todo-time">${formattedTime}</div>
                 </div>
               </div>
