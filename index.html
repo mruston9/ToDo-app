@@ -212,7 +212,9 @@
   <ul id="todoList"></ul>
 
   <script>
-    const API = 'https://todo-app-rxai.onrender.com';
+    // Talk to whichever server served this page. server.js serves index.html
+    // via express.static, so the page and the API are always on the same origin.
+    const API = window.location.origin;
 
     // When true, completed items are hidden from the list.
     let hideCompleted = false;
